@@ -70,7 +70,8 @@ Access check and enable vymgmt support
         ShowCommand    ${vm}    ${access}[0]
         ${output}    ShowCommand    ${vm}    ${access}[1]
         Log    ${output}
-        Should Contain    ${output}    -danos
+        Should Contain    ${output}    DANOS:Shipping:2105
+        #Should Contain    ${output}    -danos
     END
 
 Clear configurations on the topology
@@ -333,10 +334,7 @@ Validate BGP route selection between iBGP v/s eBGP
     # Sleep 40 sec for convergence # REQUIRED
     Sleep    40
     Log    Verify two routing paths displayed on ${R3} for reaching ${R1_rr_ip}
-    ${output}    ShowCommand    ${R3}    ${show_bgp_ipv4_unicast_ip}
-    Log    ${output}
-    Should Contain    ${output}    ${R1R2_iface_ip} from ${lo20_ip}
-    Should Contain    ${output}    ${R4R3_iface_ip} from ${R4R3_iface_ip} (${R4R1_iface_ip})
+    Wait Until Keyword Succeeds    60 sec    5 sec    Chk
     Log    Disable the eBGP path (R3-R4) by shutdowning it on ${R3}
     Log    Verify the best path choosen is the eBGP path on ${R3} for reaching ${R1_rr_ip}
     ${output}    ShowCommand    ${R3}    ${show_bgp_ipv4_unicast}
@@ -349,6 +347,12 @@ Validate BGP route selection between iBGP v/s eBGP
     Should Contain    ${output}    ${R1R2_iface_ip} from ${lo20_ip}
     Should Not Contain    ${output}    ${R4R3_iface_ip} from ${R4R3_iface_ip} (${R4R1_iface_ip})
     DeleteCommand    ${R3}    ${R3_config_best_path_shutdown}
+
+Chk
+    ${output}    ShowCommand    ${R3}    ${show_bgp_ipv4_unicast_ip}
+    Log    ${output}
+    Should Contain    ${output}    ${R1R2_iface_ip} from ${lo20_ip}
+    Should Contain    ${output}    ${R4R3_iface_ip} from ${R4R3_iface_ip} (${R4R1_iface_ip})
 
 # Verify local preference. This validation is done with the provious test configurations
 Verify local preference
@@ -381,8 +385,8 @@ Validate BGP confederation
     END
     Log    Configure new network on ${R1}
     SetCommand    ${R1}    ${R1_config_best_path_new_nw}
-    # Sleep 40 sec for convergence # REQUIRED
-    Sleep    40
+    # Sleep 40 sec for convergence # REQUIRED (40: DANOS2009, 120: DANOS2105)
+    Sleep    120
     Log    Verify subAS NOT displayed on edge routers R2 & R4 for reaching ${R1_rr_ip}
     ${output}    ShowCommand    ${R2}    ${show_bgp_ipv4_unicast_ip}
     Log    ${output}
