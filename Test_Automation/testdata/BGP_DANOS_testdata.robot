@@ -29,10 +29,10 @@
 #       network IP address, interface names details, username / passwd of danos router under below section
 
 #---------------START----------------------------------------
-${R1}                             192.168.203.158
-${R2}                             192.168.203.159
-${R3}                             192.168.203.160
-${R4}                             192.168.203.206
+${R1}                             192.168.203.231
+${R2}                             192.168.203.232
+${R3}                             192.168.203.233
+${R4}                             192.168.203.234
 ${user}                           vyatta
 ${pa}                             vyatta
 
@@ -109,7 +109,13 @@ ${show_bgp_ipv4_unicast_ip}       ${show_bgp_ipv4_unicast} ${R1_rr_ip}
 ...    show version
 
 @{delete_config}=
-...    interfaces
+...    interfaces dataplane
+...    interfaces lo
+...    interfaces lo5
+...    interfaces lo10
+...    interfaces lo20
+...    interfaces lo30
+...    interfaces lo40
 ...    security vpn ipsec
 ...    protocols ospf
 ...    protocols bgp
@@ -258,11 +264,13 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R2_BGP_AS} neighbor ${R4R2_iface_ip} remote-as ${R2_BGP_AS}
 ...    protocols bgp ${R2_BGP_AS} neighbor ${R4R2_iface_ip} address-family ipv4-unicast
 ...    protocols bgp ${R2_BGP_AS} neighbor ${R1R2_iface_ip} address-family ipv4-unicast route-reflector-client
+...    protocols bgp ${R2_BGP_AS} parameters ebgp-requires-policy disabled
 
 @{R3_protocol_config_RR_rule_3}=
 ...    protocols bgp ${EBGP_AS} neighbor ${R2R3_iface_ip} remote-as ${R3_BGP_AS}
 ...    protocols bgp ${EBGP_AS} neighbor ${R2R3_iface_ip} address-family ipv4-unicast
 ...    protocols bgp ${EBGP_AS} address-family ipv4-unicast network ${R3ID}/32
+...    protocols bgp ${EBGP_AS} parameters ebgp-requires-policy disabled
 
 @{R4_protocol_config_RR_rule_3}=
 ...    protocols bgp ${R4_BGP_AS} neighbor ${R2R4_iface_ip} remote-as ${R4_BGP_AS}
@@ -273,11 +281,13 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R1_EBGP_AS} address-family ipv4-unicast
 ...    protocols bgp ${R1_EBGP_AS} neighbor ${R2R1_iface_ip} address-family ipv4-unicast
 ...    protocols bgp ${R1_EBGP_AS} neighbor ${R2R1_iface_ip} remote-as ${R2_EBGP_AS}
+...    protocols bgp ${R1_EBGP_AS} parameters ebgp-requires-policy disabled
 
 @{R2_protocol_config_ebgp_directconnect}=
 ...    protocols bgp ${R2_EBGP_AS} address-family ipv4-unicast
 ...    protocols bgp ${R2_EBGP_AS} neighbor ${R1R2_iface_ip} address-family ipv4-unicast
 ...    protocols bgp ${R2_EBGP_AS} neighbor ${R1R2_iface_ip} remote-as ${R1_EBGP_AS}
+...    protocols bgp ${R2_EBGP_AS} parameters ebgp-requires-policy disabled
 
 #Verify EBGP Neighbor with Multihop option
 @{R1_protocol_config_ebgp_multihop}=
@@ -286,6 +296,7 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R1_EBGP_AS} neighbor ${R3R2_iface_ip} remote-as ${R3_EBGP_AS}
 ...    protocols bgp ${R1_EBGP_AS} neighbor ${R3R2_iface_ip} update-source ${R1R2_iface_ip}
 ...    protocols bgp ${R1_EBGP_AS} neighbor ${R3R2_iface_ip} ebgp-multihop 3
+...    protocols bgp ${R1_EBGP_AS} parameters ebgp-requires-policy disabled
 ...    protocols static route ${R2R3_nw}/24 next-hop ${R2R1_iface_ip}
 
 @{R3_protocol_config_ebgp_multihop}=
@@ -294,6 +305,7 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R3_EBGP_AS} neighbor ${R1R2_iface_ip} remote-as ${R1_EBGP_AS}
 ...    protocols bgp ${R3_EBGP_AS} neighbor ${R1R2_iface_ip} update-source ${R3R2_iface_ip}
 ...    protocols bgp ${R3_EBGP_AS} neighbor ${R1R2_iface_ip} ebgp-multihop 3
+...    protocols bgp ${R3_EBGP_AS} parameters ebgp-requires-policy disabled
 ...    protocols static route ${R1R2_nw}/24 next-hop ${R2R3_iface_ip}
 
 #Verify iBGP on directly connected neighbors
@@ -344,6 +356,7 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R1BgpID} neighbor ${R2R1_iface_ip} remote-as ${R2BgpID}
 ...    protocols bgp ${R1BgpID} neighbor ${R4R1_iface_ip} address-family ipv4-unicast
 ...    protocols bgp ${R1BgpID} neighbor ${R4R1_iface_ip} remote-as ${R4BgpID}
+...    protocols bgp ${R1BgpID} parameters ebgp-requires-policy disabled
 
 
 @{R1_config_best_path_new_nw}=
@@ -364,6 +377,7 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R2BgpID} neighbor ${lo30_ip} update-source ${lo20_ip}
 ...    protocols bgp ${R2BgpID} neighbor ${lo30_ip} nexthop-self
 ...    protocols bgp ${R2BgpID} address-family ipv4-unicast redistribute connected
+...    protocols bgp ${R2BgpID} parameters ebgp-requires-policy disabled
 
 @{R3_config_best_path}=
 ...    interfaces dataplane ${R3R2_interface} address ${R3R2_iface_ip}/24
@@ -377,6 +391,7 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R2BgpID} neighbor ${lo20_ip} address-family ipv4-unicast
 ...    protocols bgp ${R2BgpID} neighbor ${lo20_ip} remote-as ${R2BgpID}
 ...    protocols bgp ${R2BgpID} neighbor ${lo20_ip} update-source ${lo30_ip}
+...    protocols bgp ${R2BgpID} parameters ebgp-requires-policy disabled
 
 @{R3_config_best_path_shutdown}=
 ...    protocols bgp ${R2BgpID} neighbor ${R4R3_iface_ip} shutdown
@@ -390,6 +405,7 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols bgp ${R4BgpID} neighbor ${R3R4_iface_ip} address-family ipv4-unicast
 ...    protocols bgp ${R4BgpID} neighbor ${R3R4_iface_ip} remote-as ${R2BgpID}
 ...    protocols bgp ${R4BgpID} address-family ipv4-unicast redistribute connected
+...    protocols bgp ${R4BgpID} parameters ebgp-requires-policy disabled
 
 # Verify local preference
 ${local_pref_expected_before}    ${R1_rr_ip}/32 [${R2BgpID}/0] via ${R1R2_iface_ip}
@@ -410,6 +426,7 @@ ${local_pref_expected_after}    ${R1_rr_ip}/32 [20/0] via ${R4R3_iface_ip}
 ...    protocols bgp ${R1BgpID} neighbor ${R2R1_iface_ip} remote-as ${R2BgpID}
 ...    protocols bgp ${R1BgpID} neighbor ${R4R1_iface_ip} address-family ipv4-unicast
 ...    protocols bgp ${R1BgpID} neighbor ${R4R1_iface_ip} remote-as ${R2BgpID}
+...    protocols bgp ${R1BgpID} parameters ebgp-requires-policy disabled
 
 @{R2_confederation}=
 ...    interfaces dataplane ${R2R3_interface} address ${R2R3_iface_ip}/24
@@ -421,6 +438,7 @@ ${local_pref_expected_after}    ${R1_rr_ip}/32 [20/0] via ${R4R3_iface_ip}
 ...    protocols bgp 6700 neighbor ${R3R2_iface_ip} address-family ipv4-unicast
 ...    protocols bgp 6700 neighbor ${R3R2_iface_ip} remote-as 6600
 ...    protocols bgp 6700 parameters confederation peers 6600
+...    protocols bgp 6700 parameters ebgp-requires-policy disabled
 
 @{R3_confederation}=
 ...    interfaces dataplane ${R3R2_interface} address ${R3R2_iface_ip}/24
@@ -433,6 +451,7 @@ ${local_pref_expected_after}    ${R1_rr_ip}/32 [20/0] via ${R4R3_iface_ip}
 ...    protocols bgp 6600 neighbor ${R2R3_iface_ip} remote-as 6700
 ...    protocols bgp 6600 neighbor ${R4R3_iface_ip} address-family ipv4-unicast
 ...    protocols bgp 6600 neighbor ${R4R3_iface_ip} remote-as 6500
+...    protocols bgp 6600 parameters ebgp-requires-policy disabled
 
 @{R4_confederation}=
 ...    interfaces dataplane ${R4R3_interface} address ${R4R3_iface_ip}/24
@@ -444,6 +463,7 @@ ${local_pref_expected_after}    ${R1_rr_ip}/32 [20/0] via ${R4R3_iface_ip}
 ...    protocols bgp 6500 neighbor ${R1R4_iface_ip} remote-as ${R1BgpID}
 ...    protocols bgp 6500 neighbor ${R3R4_iface_ip} address-family ipv4-unicast
 ...    protocols bgp 6500 neighbor ${R3R4_iface_ip} remote-as 6600
+...    protocols bgp 6500 parameters ebgp-requires-policy disabled
 
 #Verify Route Flaping/dampening Feature
 @{R4_apply_route_dampening}=
